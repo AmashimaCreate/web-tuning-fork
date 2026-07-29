@@ -87,12 +87,10 @@ h1 {
   color: var(--acc);
 }
 
-/* 最下段：左にチューナーへの導線、右に残りのモード切替 */
+/* 最下段：チューナーへの導線 */
 .mode-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 4px;
   width: 100%;
   margin-top: 4px;
 }
@@ -346,9 +344,10 @@ input[type=range]::-moz-range-thumb {
 <!-- 弦ボタン -->
 <div class="sg" id="sg"></div>
 
-<!-- シンプルA への入口 -->
+<!-- 音叉 / 6音 の切替 -->
 <div class="mode-a-row">
-  <button class="mode-a-btn" id="btn-a" onclick="setMode('a')">A</button>
+  <button class="mode-a-btn" id="btn-mode" type="button" onclick="toggleFork()"
+          role="switch" aria-pressed="true">音叉</button>
 </div>
 
 <!-- 音量・A4 -->
@@ -369,39 +368,34 @@ input[type=range]::-moz-range-thumb {
 <div class="mode-row">
   <a class="app-link" href="https://amashimacreate.github.io/tuner/"
      target="_blank" rel="noopener noreferrer">チューナー ↗</a>
-  <div class="mode-group">
-    <button class="mode-btn" id="btn-fork" onclick="setMode('fork')">音叉</button>
-    <button class="mode-btn" id="btn-open" onclick="setMode('open')">実音</button>
-  </div>
 </div>
 
 <script>
 // ── アプリ状態 ──
 const S = {
   inst:    'guitar',
-  mode:    'fork',    // 'a' | 'fork' | 'open'
+  mode:    'fork',    // 'fork' = 音叉(A のみ) | 'open' = 6音（実際の開放弦）
   a4:      440,
   vol:     0.50,
   // playing: null | { id, note, oct, stringNo }
   playing: null,
 };
 
-// ── 楽器定義 ──
-// open: 実際の開放弦音  / fork: 聞き取りやすい基準オクターブ音
+// ── 楽器定義（実際の開放弦音） ──
 const PRESETS = {
   guitar: [
-    { n:6, label:'E', open:{note:'E',oct:2}, fork:{note:'E',oct:4} },
-    { n:5, label:'A', open:{note:'A',oct:2}, fork:{note:'A',oct:4} },
-    { n:4, label:'D', open:{note:'D',oct:3}, fork:{note:'D',oct:4} },
-    { n:3, label:'G', open:{note:'G',oct:3}, fork:{note:'G',oct:4} },
-    { n:2, label:'B', open:{note:'B',oct:3}, fork:{note:'B',oct:4} },
-    { n:1, label:'E', open:{note:'E',oct:4}, fork:{note:'E',oct:4} },
+    { n:6, label:'E', open:{note:'E',oct:2} },
+    { n:5, label:'A', open:{note:'A',oct:2} },
+    { n:4, label:'D', open:{note:'D',oct:3} },
+    { n:3, label:'G', open:{note:'G',oct:3} },
+    { n:2, label:'B', open:{note:'B',oct:3} },
+    { n:1, label:'E', open:{note:'E',oct:4} },
   ],
   bass: [
-    { n:4, label:'E', open:{note:'E',oct:1}, fork:{note:'E',oct:4} },
-    { n:3, label:'A', open:{note:'A',oct:1}, fork:{note:'A',oct:4} },
-    { n:2, label:'D', open:{note:'D',oct:2}, fork:{note:'D',oct:4} },
-    { n:1, label:'G', open:{note:'G',oct:2}, fork:{note:'G',oct:4} },
+    { n:4, label:'E', open:{note:'E',oct:1} },
+    { n:3, label:'A', open:{note:'A',oct:1} },
+    { n:2, label:'D', open:{note:'D',oct:2} },
+    { n:1, label:'G', open:{note:'G',oct:2} },
   ],
 };
 
@@ -411,9 +405,9 @@ function calcFreq(note, oct, a4) {
   return a4 * Math.pow(2, ((NM.indexOf(note) - 9) + (oct - 4) * 12) / 12);
 }
 
-// ── 現在モードの note/oct を返す ──
+// ── 弦の note/oct ──
 function getTarget(str) {
-  return S.mode === 'fork' ? str.fork : str.open;
+  return str.open;
 }
 
 // ── Web Audio ──
@@ -480,6 +474,11 @@ function clickStr(stringNo) {
   S.playing = { id, note: tgt.note, oct: tgt.oct, stringNo: str.n };
   play(calcFreq(tgt.note, tgt.oct, S.a4));
   drawSounding();
+}
+
+// ── 音叉 / 6音 の切替（ボタンひとつ） ──
+function toggleFork() {
+  setMode(S.mode === 'fork' ? 'open' : 'fork');
 }
 
 // ── 楽器・モード切替 ──
@@ -572,15 +571,15 @@ function drawStrings() {
 
 function draw() {
   // シンプルA は弦を選ばないので、楽器切替と弦ボタンは出さない。
-  const simple = S.mode === 'a';
+  const simple = S.mode === 'fork';
   document.getElementById('forkStage').classList.toggle('show', simple);
   document.getElementById('sg').style.display     = simple ? 'none' : '';
   document.getElementById('inst-row').style.display = simple ? 'none' : '';
   document.getElementById('btn-guitar').classList.toggle('on', S.inst === 'guitar');
   document.getElementById('btn-bass').classList.toggle('on',   S.inst === 'bass');
-  document.getElementById('btn-a').classList.toggle('on',      S.mode === 'a');
-  document.getElementById('btn-fork').classList.toggle('on',   S.mode === 'fork');
-  document.getElementById('btn-open').classList.toggle('on',   S.mode === 'open');
+  const forkBtn = document.getElementById('btn-mode');
+  forkBtn.classList.toggle('on', simple);
+  forkBtn.setAttribute('aria-pressed', String(simple));
   document.getElementById('a4r').value  = S.a4;
   document.getElementById('a4v').textContent = S.a4 + ' Hz';
   document.getElementById('volr').value = Math.round(S.vol * 100);
@@ -599,7 +598,9 @@ function load() {
   try {
     const d = JSON.parse(localStorage.getItem(KEY) || '{}');
     if (d.inst === 'guitar' || d.inst === 'bass')   S.inst = d.inst;
-    if (d.mode === 'a' || d.mode === 'fork' || d.mode === 'open') S.mode = d.mode;
+    // 'a' は音叉ビューの旧 ID
+    if (d.mode === 'a')    S.mode = 'fork';
+    if (d.mode === 'fork' || d.mode === 'open') S.mode = d.mode;
     if (typeof d.a4  === 'number' && d.a4  >= 432 && d.a4  <= 446) S.a4  = d.a4;
     if (typeof d.vol === 'number' && d.vol >= 0   && d.vol <= 1)   S.vol = d.vol;
   } catch(e) {}
