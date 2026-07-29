@@ -48,7 +48,7 @@ h1 {
   margin-bottom: 28px;
 }
 .pill-btn {
-  padding: 10px 28px;
+  padding: 10px 22px;
   border-radius: 999px;
   border: 1.5px solid var(--bdr);
   background: var(--card);
@@ -63,30 +63,6 @@ h1 {
   border-color: var(--acc);
   color: var(--acc);
 }
-/* シンプルA は入口を目立たせる：音量のすぐ上、全幅 */
-.mode-a-row {
-  width: 100%;
-  margin-bottom: 14px;
-}
-.mode-a-btn {
-  width: 100%;
-  padding: 12px 0;
-  border-radius: 999px;
-  border: 1.5px solid var(--bdr);
-  background: var(--card);
-  color: var(--dim);
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: .06em;
-  cursor: pointer;
-  transition: border-color .15s, color .15s;
-  -webkit-tap-highlight-color: transparent;
-}
-.mode-a-btn.on {
-  border-color: var(--acc);
-  color: var(--acc);
-}
-
 /* 最下段：チューナーへの導線 */
 .mode-row {
   display: flex;
@@ -337,18 +313,14 @@ input[type=range]::-moz-range-thumb {
 
 <!-- 楽器切替 -->
 <div class="inst-row" id="inst-row">
+  <button class="pill-btn" id="btn-mode" type="button" onclick="toggleFork()"
+          role="switch" aria-pressed="true">音叉</button>
   <button class="pill-btn" id="btn-guitar" onclick="setInst('guitar')">Guitar</button>
   <button class="pill-btn" id="btn-bass"   onclick="setInst('bass')">Bass</button>
 </div>
 
 <!-- 弦ボタン -->
 <div class="sg" id="sg"></div>
-
-<!-- 音叉 / 6音 の切替 -->
-<div class="mode-a-row">
-  <button class="mode-a-btn" id="btn-mode" type="button" onclick="toggleFork()"
-          role="switch" aria-pressed="true">音叉</button>
-</div>
 
 <!-- 音量・A4 -->
 <div class="ctrl">
@@ -482,10 +454,13 @@ function toggleFork() {
 }
 
 // ── 楽器・モード切替 ──
+// 楽器を選ぶのは「その楽器の6音を鳴らす」という意思表示なので、音叉ビューから
+// 抜ける。おかげで音叉/Guitar/Bass はどれかひとつだけが点く 1 行になる。
 function setInst(v) {
-  if (S.inst === v) return;
+  if (S.inst === v && S.mode !== 'fork') return;
   stopAll();
   S.inst = v;
+  S.mode = 'open';
   save(); draw();
 }
 function setMode(v) {
@@ -570,13 +545,13 @@ function drawStrings() {
 }
 
 function draw() {
-  // シンプルA は弦を選ばないので、楽器切替と弦ボタンは出さない。
+  // 音叉ビューは弦を選ばないので弦ボタンだけ隠す。切替ボタンが楽器行に
+  // 入っているので、行そのものは常に出しておく。
   const simple = S.mode === 'fork';
   document.getElementById('forkStage').classList.toggle('show', simple);
-  document.getElementById('sg').style.display     = simple ? 'none' : '';
-  document.getElementById('inst-row').style.display = simple ? 'none' : '';
-  document.getElementById('btn-guitar').classList.toggle('on', S.inst === 'guitar');
-  document.getElementById('btn-bass').classList.toggle('on',   S.inst === 'bass');
+  document.getElementById('sg').style.display = simple ? 'none' : '';
+  document.getElementById('btn-guitar').classList.toggle('on', !simple && S.inst === 'guitar');
+  document.getElementById('btn-bass').classList.toggle('on',   !simple && S.inst === 'bass');
   const forkBtn = document.getElementById('btn-mode');
   forkBtn.classList.toggle('on', simple);
   forkBtn.setAttribute('aria-pressed', String(simple));
