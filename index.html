@@ -63,13 +63,29 @@ h1 {
   border-color: var(--acc);
   color: var(--acc);
 }
-/* 最下段：チューナーへの導線 */
+/* 最下段：左にチューナーへの導線、右に基準音/実音 */
 .mode-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 4px;
   width: 100%;
   margin-top: 4px;
 }
+.notes-row { display: flex; gap: 4px; }
+.mode-btn {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--dim);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.mode-btn.on { color: var(--txt); }
 .app-link {
   padding: 4px 6px;
   color: var(--dim);
@@ -340,34 +356,40 @@ input[type=range]::-moz-range-thumb {
 <div class="mode-row">
   <a class="app-link" href="https://amashimacreate.github.io/tuner/"
      target="_blank" rel="noopener noreferrer">チューナー ↗</a>
+  <div class="notes-row" id="notes-row">
+    <button class="mode-btn" id="btn-ref"  type="button" onclick="setNotes('ref')">基準音</button>
+    <button class="mode-btn" id="btn-real" type="button" onclick="setNotes('real')">実音</button>
+  </div>
 </div>
 
 <script>
 // ── アプリ状態 ──
 const S = {
   inst:    'guitar',
-  mode:    'fork',    // 'fork' = 音叉(A のみ) | 'open' = 6音（実際の開放弦）
+  mode:    'fork',    // 'fork' = 音叉(A のみ) | 'open' = 各弦
+  notes:   'real',    // 各弦を鳴らすとき 'real' = 実音 | 'ref' = 4 オクターブの基準音
   a4:      440,
   vol:     0.50,
   // playing: null | { id, note, oct, stringNo }
   playing: null,
 };
 
-// ── 楽器定義（実際の開放弦音） ──
+// ── 楽器定義 ──
+// open: 実際の開放弦音  / ref: 聞き取りやすいよう 4 オクターブに揃えた基準音
 const PRESETS = {
   guitar: [
-    { n:6, label:'E', open:{note:'E',oct:2} },
-    { n:5, label:'A', open:{note:'A',oct:2} },
-    { n:4, label:'D', open:{note:'D',oct:3} },
-    { n:3, label:'G', open:{note:'G',oct:3} },
-    { n:2, label:'B', open:{note:'B',oct:3} },
-    { n:1, label:'E', open:{note:'E',oct:4} },
+    { n:6, label:'E', open:{note:'E',oct:2}, ref:{note:'E',oct:4} },
+    { n:5, label:'A', open:{note:'A',oct:2}, ref:{note:'A',oct:4} },
+    { n:4, label:'D', open:{note:'D',oct:3}, ref:{note:'D',oct:4} },
+    { n:3, label:'G', open:{note:'G',oct:3}, ref:{note:'G',oct:4} },
+    { n:2, label:'B', open:{note:'B',oct:3}, ref:{note:'B',oct:4} },
+    { n:1, label:'E', open:{note:'E',oct:4}, ref:{note:'E',oct:4} },
   ],
   bass: [
-    { n:4, label:'E', open:{note:'E',oct:1} },
-    { n:3, label:'A', open:{note:'A',oct:1} },
-    { n:2, label:'D', open:{note:'D',oct:2} },
-    { n:1, label:'G', open:{note:'G',oct:2} },
+    { n:4, label:'E', open:{note:'E',oct:1}, ref:{note:'E',oct:4} },
+    { n:3, label:'A', open:{note:'A',oct:1}, ref:{note:'A',oct:4} },
+    { n:2, label:'D', open:{note:'D',oct:2}, ref:{note:'D',oct:4} },
+    { n:1, label:'G', open:{note:'G',oct:2}, ref:{note:'G',oct:4} },
   ],
 };
 
@@ -377,9 +399,9 @@ function calcFreq(note, oct, a4) {
   return a4 * Math.pow(2, ((NM.indexOf(note) - 9) + (oct - 4) * 12) / 12);
 }
 
-// ── 弦の note/oct ──
+// ── 弦の note/oct（基準音 / 実音） ──
 function getTarget(str) {
-  return str.open;
+  return S.notes === 'ref' ? str.ref : str.open;
 }
 
 // ── Web Audio ──
@@ -449,6 +471,13 @@ function clickStr(stringNo) {
 }
 
 // ── 音叉 / 6音 の切替（ボタンひとつ） ──
+function setNotes(v) {
+  if (S.notes === v) return;
+  stopAll();
+  S.notes = v;
+  save(); draw();
+}
+
 function toggleFork() {
   setMode(S.mode === 'fork' ? 'open' : 'fork');
 }
@@ -552,6 +581,10 @@ function draw() {
   document.getElementById('sg').style.display = simple ? 'none' : '';
   document.getElementById('btn-guitar').classList.toggle('on', !simple && S.inst === 'guitar');
   document.getElementById('btn-bass').classList.toggle('on',   !simple && S.inst === 'bass');
+  // 基準音/実音は各弦を鳴らすときだけの選択なので、音叉ビューでは出さない。
+  document.getElementById('notes-row').style.display = simple ? 'none' : '';
+  document.getElementById('btn-ref').classList.toggle('on',  S.notes === 'ref');
+  document.getElementById('btn-real').classList.toggle('on', S.notes === 'real');
   const forkBtn = document.getElementById('btn-mode');
   forkBtn.classList.toggle('on', simple);
   forkBtn.setAttribute('aria-pressed', String(simple));
@@ -566,7 +599,9 @@ function draw() {
 const KEY = 'web-tuning-fork-v1';
 function save() {
   try {
-    localStorage.setItem(KEY, JSON.stringify({ inst:S.inst, mode:S.mode, a4:S.a4, vol:S.vol }));
+    localStorage.setItem(KEY, JSON.stringify({
+      inst:S.inst, mode:S.mode, notes:S.notes, a4:S.a4, vol:S.vol,
+    }));
   } catch(e) {}
 }
 function load() {
@@ -576,6 +611,7 @@ function load() {
     // 'a' は音叉ビューの旧 ID
     if (d.mode === 'a')    S.mode = 'fork';
     if (d.mode === 'fork' || d.mode === 'open') S.mode = d.mode;
+    if (d.notes === 'real' || d.notes === 'ref') S.notes = d.notes;
     if (typeof d.a4  === 'number' && d.a4  >= 432 && d.a4  <= 446) S.a4  = d.a4;
     if (typeof d.vol === 'number' && d.vol >= 0   && d.vol <= 1)   S.vol = d.vol;
   } catch(e) {}
