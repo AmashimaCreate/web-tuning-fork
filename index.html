@@ -87,6 +87,85 @@ h1 {
   color: var(--txt);
 }
 
+/* シンプルA：音叉そのもの */
+.fork-stage {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 56px;
+}
+.fork-stage.show { display: flex; }
+.fork-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.fork-svg {
+  display: block;
+  width: 138px;
+  height: auto;
+  overflow: visible;
+  transition: transform .08s;
+}
+.fork-btn:active .fork-svg { transform: scale(.96); }
+.fork-btn:focus-visible { outline: 3px solid var(--acc); outline-offset: 6px; border-radius: 12px; }
+.fork-part {
+  fill: none;
+  stroke: url(#forkMetal);
+  stroke-width: 13;
+  stroke-linecap: round;
+}
+.fork-knob { fill: url(#forkMetal); stroke: none; }
+/* 鳴っている間だけ叉が震える。支点は叉の根元（viewBox 座標で指定：
+   直線の fill-box は幅ゼロで使えない）。 */
+.fork-tine-l { transform-origin: 34px 176px; }
+.fork-tine-r { transform-origin: 86px 176px; }
+.fork-btn.on .fork-tine-l { animation: tineL .1s linear infinite; }
+.fork-btn.on .fork-tine-r { animation: tineR .1s linear infinite; }
+@keyframes tineL {
+  0%, 100% { transform: rotate(-1.5deg); }
+  50%      { transform: rotate(1.5deg); }
+}
+@keyframes tineR {
+  0%, 100% { transform: rotate(1.5deg); }
+  50%      { transform: rotate(-1.5deg); }
+}
+.fork-btn.on .fork-part { stroke: url(#forkMetalOn); }
+.fork-btn.on .fork-knob { fill: url(#forkMetalOn); }
+.fork-ring {
+  fill: none;
+  stroke: var(--on-txt);
+  stroke-width: 2;
+  opacity: 0;
+  transform-origin: 60px 104px;
+}
+.fork-btn.on .fork-ring { animation: forkRing 1.6s ease-out infinite; }
+.fork-btn.on .fork-ring-2 { animation-delay: .8s; }
+@keyframes forkRing {
+  0%   { transform: scale(.5); opacity: .5; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+.fork-readout {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+}
+.fork-note { font-size: 30px; font-weight: 800; letter-spacing: -.02em; color: var(--dim); }
+.fork-hz   { font-size: 13px; font-weight: 700; color: var(--dim); }
+.fork-stage.on .fork-note, .fork-stage.on .fork-hz { color: var(--on-txt); }
+.fork-hint { font-size: 11px; color: var(--dim); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fork-btn.on .fork-tine-l,
+  .fork-btn.on .fork-tine-r,
+  .fork-btn.on .fork-ring { animation: none; }
+  .fork-btn.on .fork-ring { opacity: .28; }
+}
+
 /* 弦ボタン */
 .sg {
   display: flex;
@@ -186,8 +265,43 @@ input[type=range]::-moz-range-thumb {
 
 <h1>🎸 WEB音叉</h1>
 
+<!-- シンプルA：音叉を叩いて鳴らす -->
+<div class="fork-stage" id="forkStage">
+  <button class="fork-btn" id="forkBtn" type="button" onclick="clickFork()"
+          aria-pressed="false" aria-label="音叉を鳴らす">
+    <svg class="fork-svg" viewBox="0 0 120 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="forkMetal" gradientUnits="userSpaceOnUse" x1="20" y1="0" x2="100" y2="0">
+          <stop offset="0"   stop-color="#6d747d"/>
+          <stop offset=".35" stop-color="#d5dae0"/>
+          <stop offset=".62" stop-color="#8d949d"/>
+          <stop offset="1"   stop-color="#5c626a"/>
+        </linearGradient>
+        <linearGradient id="forkMetalOn" gradientUnits="userSpaceOnUse" x1="20" y1="0" x2="100" y2="0">
+          <stop offset="0"   stop-color="#7d8a6a"/>
+          <stop offset=".35" stop-color="#e2ecd2"/>
+          <stop offset=".62" stop-color="#a3b489"/>
+          <stop offset="1"   stop-color="#6b7659"/>
+        </linearGradient>
+      </defs>
+      <circle class="fork-ring" cx="60" cy="104" r="46"/>
+      <circle class="fork-ring fork-ring-2" cx="60" cy="104" r="46"/>
+      <path class="fork-part fork-tine fork-tine-l" d="M34 26 L34 176"/>
+      <path class="fork-part fork-tine fork-tine-r" d="M86 26 L86 176"/>
+      <path class="fork-part" d="M34 176 C34 208 44 220 60 220 C76 220 86 208 86 176"/>
+      <path class="fork-part" d="M60 220 L60 268"/>
+      <circle class="fork-knob" cx="60" cy="278" r="11"/>
+    </svg>
+  </button>
+  <div class="fork-readout">
+    <span class="fork-note" id="forkNote">A4</span>
+    <span class="fork-hz" id="forkHz">440.0 Hz</span>
+  </div>
+  <span class="fork-hint" id="forkHint">タップで鳴らす</span>
+</div>
+
 <!-- 楽器切替 -->
-<div class="inst-row">
+<div class="inst-row" id="inst-row">
   <button class="pill-btn" id="btn-guitar" onclick="setInst('guitar')">Guitar</button>
   <button class="pill-btn" id="btn-bass"   onclick="setInst('bass')">Bass</button>
 </div>
@@ -211,6 +325,7 @@ input[type=range]::-moz-range-thumb {
   <span class="cv" id="a4v">440 Hz</span>
 </div>
 <div class="mode-row">
+  <button class="mode-btn" id="btn-a"    onclick="setMode('a')">A</button>
   <button class="mode-btn" id="btn-fork" onclick="setMode('fork')">音叉</button>
   <button class="mode-btn" id="btn-open" onclick="setMode('open')">実音</button>
 </div>
@@ -219,7 +334,7 @@ input[type=range]::-moz-range-thumb {
 // ── アプリ状態 ──
 const S = {
   inst:    'guitar',
-  mode:    'fork',    // 'fork' | 'open'
+  mode:    'fork',    // 'a' | 'fork' | 'open'
   a4:      440,
   vol:     0.50,
   // playing: null | { id, note, oct, stringNo }
@@ -296,7 +411,18 @@ async function play(hz) {
 function stopAll() {
   _stop();
   S.playing = null;
-  drawStrings();
+  drawSounding();
+}
+
+// ── 音叉タップ（シンプルA） ──
+// 弦を選ばず A だけを鳴らす。A4 スライダーがそのまま基準になる。
+const FORK_A = { note:'A', oct:4, id:'A4_fork' };
+
+function clickFork() {
+  if (S.playing && S.playing.id === FORK_A.id) { stopAll(); return; }
+  S.playing = { id: FORK_A.id, note: FORK_A.note, oct: FORK_A.oct, stringNo: 0 };
+  play(calcFreq(FORK_A.note, FORK_A.oct, S.a4));
+  drawSounding();
 }
 
 // ── 弦タップ ──
@@ -308,7 +434,7 @@ function clickStr(stringNo) {
   if (S.playing && S.playing.id === id) { stopAll(); return; }
   S.playing = { id, note: tgt.note, oct: tgt.oct, stringNo: str.n };
   play(calcFreq(tgt.note, tgt.oct, S.a4));
-  drawStrings();
+  drawSounding();
 }
 
 // ── 楽器・モード切替 ──
@@ -337,7 +463,7 @@ function setA4(v) {
       ctx.currentTime, 0.01
     );
   }
-  drawStrings();
+  drawSounding();
   save();
 }
 function stepA4(d) { setA4(Math.min(446, Math.max(432, S.a4 + d))); }
@@ -364,6 +490,23 @@ function stepVol(d) {
 }
 
 // ── 描画 ──
+// 鳴っている状態を映すものはまとめて更新する。
+function drawSounding() {
+  drawStrings();
+  drawFork();
+}
+
+function drawFork() {
+  const on = Boolean(S.playing && S.playing.id === FORK_A.id);
+  document.getElementById('forkBtn').classList.toggle('on', on);
+  document.getElementById('forkBtn').setAttribute('aria-pressed', String(on));
+  document.getElementById('forkStage').classList.toggle('on', on);
+  document.getElementById('forkNote').textContent = FORK_A.note + FORK_A.oct;
+  document.getElementById('forkHz').textContent =
+    calcFreq(FORK_A.note, FORK_A.oct, S.a4).toFixed(1) + ' Hz';
+  document.getElementById('forkHint').textContent = on ? '鳴っています — タップで止める' : 'タップで鳴らす';
+}
+
 function drawStrings() {
   document.getElementById('sg').innerHTML = PRESETS[S.inst].map(str => {
     const tgt = getTarget(str);
@@ -383,15 +526,21 @@ function drawStrings() {
 }
 
 function draw() {
+  // シンプルA は弦を選ばないので、楽器切替と弦ボタンは出さない。
+  const simple = S.mode === 'a';
+  document.getElementById('forkStage').classList.toggle('show', simple);
+  document.getElementById('sg').style.display     = simple ? 'none' : '';
+  document.getElementById('inst-row').style.display = simple ? 'none' : '';
   document.getElementById('btn-guitar').classList.toggle('on', S.inst === 'guitar');
   document.getElementById('btn-bass').classList.toggle('on',   S.inst === 'bass');
+  document.getElementById('btn-a').classList.toggle('on',      S.mode === 'a');
   document.getElementById('btn-fork').classList.toggle('on',   S.mode === 'fork');
   document.getElementById('btn-open').classList.toggle('on',   S.mode === 'open');
   document.getElementById('a4r').value  = S.a4;
   document.getElementById('a4v').textContent = S.a4 + ' Hz';
   document.getElementById('volr').value = Math.round(S.vol * 100);
   document.getElementById('volv').textContent = Math.round(S.vol * 100) + '%';
-  drawStrings();
+  drawSounding();
 }
 
 // ── localStorage ──
@@ -405,7 +554,7 @@ function load() {
   try {
     const d = JSON.parse(localStorage.getItem(KEY) || '{}');
     if (d.inst === 'guitar' || d.inst === 'bass')   S.inst = d.inst;
-    if (d.mode === 'fork'   || d.mode === 'open')   S.mode = d.mode;
+    if (d.mode === 'a' || d.mode === 'fork' || d.mode === 'open') S.mode = d.mode;
     if (typeof d.a4  === 'number' && d.a4  >= 432 && d.a4  <= 446) S.a4  = d.a4;
     if (typeof d.vol === 'number' && d.vol >= 0   && d.vol <= 1)   S.vol = d.vol;
   } catch(e) {}
