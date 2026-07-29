@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#131518">
 <title>Web音叉 – ギター/ベース</title>
 <style>
 :root {
@@ -198,7 +199,9 @@ h1 {
   display: flex;
   flex-wrap: nowrap;
   justify-content: center;
-  gap: 8px;
+  /* 6 個を必ず 1 行に収める。固定 56px だと 360px 以下で両端が画面外に出て
+     押せなくなっていた（320px で左端が -28px）。 */
+  gap: clamp(4px, 1.6vw, 8px);
   margin-bottom: 40px;
 }
 .sitem {
@@ -212,7 +215,9 @@ h1 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 56px; height: 56px;
+  width: min(56px, calc((100vw - 64px) / 6));
+  height: min(56px, calc((100vw - 64px) / 6));
+  flex: 0 0 auto;
   border-radius: 50%;
   border: 2px solid var(--bdr);
   background: var(--card);
@@ -272,10 +277,26 @@ h1 {
 .sb:active { background: var(--card); }
 input[type=range] {
   -webkit-appearance: none;
-  flex: 1; height: 4px;
+  /* range の固有最小幅は 130px 前後あり、min-width:0 がないと 320px 幅で
+     音量/A4 の行がはみ出す（最小内容幅 330px）。 */
+  flex: 1; min-width: 0; height: 4px;
   border-radius: 2px;
   background: var(--bdr);
   outline: none; cursor: pointer;
+}
+/* outline:none はつまみの見た目のためだが、キーボードでは行方が分からなく
+   なるので、フォーカス時だけは必ず見えるようにする。 */
+input[type=range]:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 4px;
+}
+.pill-btn:focus-visible,
+.mode-btn:focus-visible,
+.sbtn:focus-visible,
+.sb:focus-visible,
+.app-link:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 3px;
 }
 input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -330,9 +351,11 @@ input[type=range]::-moz-range-thumb {
 <!-- 楽器切替 -->
 <div class="inst-row" id="inst-row">
   <button class="pill-btn" id="btn-mode" type="button" onclick="toggleFork()"
-          role="switch" aria-pressed="true">音叉</button>
-  <button class="pill-btn" id="btn-guitar" onclick="setInst('guitar')">Guitar</button>
-  <button class="pill-btn" id="btn-bass"   onclick="setInst('bass')">Bass</button>
+          aria-pressed="true">音叉</button>
+  <button class="pill-btn" id="btn-guitar" type="button" onclick="setInst('guitar')"
+          aria-pressed="false">Guitar</button>
+  <button class="pill-btn" id="btn-bass" type="button" onclick="setInst('bass')"
+          aria-pressed="false">Bass</button>
 </div>
 
 <!-- 弦ボタン -->
@@ -340,25 +363,29 @@ input[type=range]::-moz-range-thumb {
 
 <!-- 音量・A4 -->
 <div class="ctrl">
-  <span class="cl">音量</span>
-  <button class="sb" onclick="stepVol(-5)">−</button>
-  <input type="range" id="volr" min="0" max="100" step="5" value="50" oninput="setVol(+this.value)">
-  <button class="sb" onclick="stepVol(+5)">＋</button>
-  <span class="cv" id="volv">50%</span>
+  <span class="cl" id="vol-label">音量</span>
+  <button class="sb" type="button" onclick="stepVol(-5)" aria-label="音量を下げる">−</button>
+  <input type="range" id="volr" min="0" max="100" step="5" value="50"
+         aria-labelledby="vol-label" oninput="setVol(+this.value)">
+  <button class="sb" type="button" onclick="stepVol(+5)" aria-label="音量を上げる">＋</button>
+  <span class="cv" id="volv" aria-live="polite">50%</span>
 </div>
 <div class="ctrl">
-  <span class="cl">A4</span>
-  <button class="sb" onclick="stepA4(-1)">−</button>
-  <input type="range" id="a4r" min="432" max="446" step="1" value="440" oninput="setA4(+this.value)">
-  <button class="sb" onclick="stepA4(+1)">＋</button>
-  <span class="cv" id="a4v">440 Hz</span>
+  <span class="cl" id="a4-label">A4</span>
+  <button class="sb" type="button" onclick="stepA4(-1)" aria-label="基準ピッチを下げる">−</button>
+  <input type="range" id="a4r" min="432" max="446" step="1" value="440"
+         aria-labelledby="a4-label" oninput="setA4(+this.value)">
+  <button class="sb" type="button" onclick="stepA4(+1)" aria-label="基準ピッチを上げる">＋</button>
+  <span class="cv" id="a4v" aria-live="polite">440 Hz</span>
 </div>
 <div class="mode-row">
   <a class="app-link" href="https://amashimacreate.github.io/tuner/"
      target="_blank" rel="noopener noreferrer">チューナー ↗</a>
   <div class="notes-row" id="notes-row">
-    <button class="mode-btn" id="btn-ref"  type="button" onclick="setNotes('ref')">基準音</button>
-    <button class="mode-btn" id="btn-real" type="button" onclick="setNotes('real')">実音</button>
+    <button class="mode-btn" id="btn-ref" type="button" onclick="setNotes('ref')"
+            aria-pressed="false">基準音</button>
+    <button class="mode-btn" id="btn-real" type="button" onclick="setNotes('real')"
+            aria-pressed="true">実音</button>
   </div>
 </div>
 
@@ -370,7 +397,7 @@ const S = {
   notes:   'real',    // 各弦を鳴らすとき 'real' = 実音 | 'ref' = 4 オクターブの基準音
   a4:      440,
   vol:     0.50,
-  // playing: null | { id, note, oct, stringNo }
+  // playing: null | { id, note, oct }
   playing: null,
 };
 
@@ -378,18 +405,18 @@ const S = {
 // open: 実際の開放弦音  / ref: 聞き取りやすいよう 4 オクターブに揃えた基準音
 const PRESETS = {
   guitar: [
-    { n:6, label:'E', open:{note:'E',oct:2}, ref:{note:'E',oct:4} },
-    { n:5, label:'A', open:{note:'A',oct:2}, ref:{note:'A',oct:4} },
-    { n:4, label:'D', open:{note:'D',oct:3}, ref:{note:'D',oct:4} },
-    { n:3, label:'G', open:{note:'G',oct:3}, ref:{note:'G',oct:4} },
-    { n:2, label:'B', open:{note:'B',oct:3}, ref:{note:'B',oct:4} },
-    { n:1, label:'E', open:{note:'E',oct:4}, ref:{note:'E',oct:4} },
+    { n:6, open:{note:'E',oct:2}, ref:{note:'E',oct:4} },
+    { n:5, open:{note:'A',oct:2}, ref:{note:'A',oct:4} },
+    { n:4, open:{note:'D',oct:3}, ref:{note:'D',oct:4} },
+    { n:3, open:{note:'G',oct:3}, ref:{note:'G',oct:4} },
+    { n:2, open:{note:'B',oct:3}, ref:{note:'B',oct:4} },
+    { n:1, open:{note:'E',oct:4}, ref:{note:'E',oct:4} },
   ],
   bass: [
-    { n:4, label:'E', open:{note:'E',oct:1}, ref:{note:'E',oct:4} },
-    { n:3, label:'A', open:{note:'A',oct:1}, ref:{note:'A',oct:4} },
-    { n:2, label:'D', open:{note:'D',oct:2}, ref:{note:'D',oct:4} },
-    { n:1, label:'G', open:{note:'G',oct:2}, ref:{note:'G',oct:4} },
+    { n:4, open:{note:'E',oct:1}, ref:{note:'E',oct:4} },
+    { n:3, open:{note:'A',oct:1}, ref:{note:'A',oct:4} },
+    { n:2, open:{note:'D',oct:2}, ref:{note:'D',oct:4} },
+    { n:1, open:{note:'G',oct:2}, ref:{note:'G',oct:4} },
   ],
 };
 
@@ -453,7 +480,7 @@ const FORK_A = { note:'A', oct:4, id:'A4_fork' };
 
 function clickFork() {
   if (S.playing && S.playing.id === FORK_A.id) { stopAll(); return; }
-  S.playing = { id: FORK_A.id, note: FORK_A.note, oct: FORK_A.oct, stringNo: 0 };
+  S.playing = { id: FORK_A.id, note: FORK_A.note, oct: FORK_A.oct };
   play(calcFreq(FORK_A.note, FORK_A.oct, S.a4));
   drawSounding();
 }
@@ -465,7 +492,7 @@ function clickStr(stringNo) {
   const tgt = getTarget(str);
   const id  = tgt.note + tgt.oct + '_' + str.n; // 同音名でも弦を区別
   if (S.playing && S.playing.id === id) { stopAll(); return; }
-  S.playing = { id, note: tgt.note, oct: tgt.oct, stringNo: str.n };
+  S.playing = { id, note: tgt.note, oct: tgt.oct };
   play(calcFreq(tgt.note, tgt.oct, S.a4));
   drawSounding();
 }
@@ -538,6 +565,12 @@ function stepVol(d) {
 }
 
 // ── 描画 ──
+function setPressed(id, on) {
+  const el = document.getElementById(id);
+  el.classList.toggle('on', on);
+  el.setAttribute('aria-pressed', String(on));
+}
+
 // 鳴っている状態を映すものはまとめて更新する。
 function drawSounding() {
   drawStrings();
@@ -555,22 +588,38 @@ function drawFork() {
   document.getElementById('forkHint').textContent = on ? '鳴っています — タップで止める' : 'タップで鳴らす';
 }
 
+// 骨組みは楽器が変わったときだけ作る。A4 や音量のたびに innerHTML を差し替える
+// と、押していた弦ボタンごと作り直されてフォーカスが飛んでいた。
+let stringsBuiltFor = null;
+
+function buildStrings() {
+  document.getElementById('sg').innerHTML = PRESETS[S.inst].map((str) => `
+    <div class="sitem" data-n="${str.n}">
+      <button class="sbtn" type="button" onclick="clickStr(${str.n})" aria-pressed="false">
+        <span class="sn">${str.n}弦</span>
+        <span class="sk"></span>
+      </button>
+      <span class="sf"></span>
+    </div>`).join('');
+  stringsBuiltFor = S.inst;
+}
+
 function drawStrings() {
-  document.getElementById('sg').innerHTML = PRESETS[S.inst].map(str => {
+  if (stringsBuiltFor !== S.inst) buildStrings();
+  for (const str of PRESETS[S.inst]) {
+    const item = document.querySelector(`.sitem[data-n="${str.n}"]`);
+    if (!item) continue;
     const tgt = getTarget(str);
     const id  = tgt.note + tgt.oct + '_' + str.n;
-    const hz  = calcFreq(tgt.note, tgt.oct, S.a4).toFixed(1);
-    // 表示ラベル: モードに応じた note+oct（表示と実音を一致させる）
-    const label = tgt.note + tgt.oct;
-    const on  = S.playing && S.playing.id === id;
-    return `<div class="sitem${on ? ' on' : ''}">
-      <button class="sbtn${on ? ' on' : ''}" onclick="clickStr(${str.n})">
-        <span class="sn">${str.n}弦</span>
-        <span class="sk">${label}</span>
-      </button>
-      <span class="sf">${hz}Hz</span>
-    </div>`;
-  }).join('');
+    const on  = Boolean(S.playing && S.playing.id === id);
+    // 表示ラベルは鳴る音そのもの（表示と実音を一致させる）
+    item.querySelector('.sk').textContent = tgt.note + tgt.oct;
+    item.querySelector('.sf').textContent = calcFreq(tgt.note, tgt.oct, S.a4).toFixed(1) + 'Hz';
+    item.classList.toggle('on', on);
+    const button = item.querySelector('.sbtn');
+    button.classList.toggle('on', on);
+    button.setAttribute('aria-pressed', String(on));
+  }
 }
 
 function draw() {
@@ -583,8 +632,8 @@ function draw() {
   document.getElementById('btn-bass').classList.toggle('on',   !simple && S.inst === 'bass');
   // 基準音/実音は各弦を鳴らすときだけの選択なので、音叉ビューでは出さない。
   document.getElementById('notes-row').style.display = simple ? 'none' : '';
-  document.getElementById('btn-ref').classList.toggle('on',  S.notes === 'ref');
-  document.getElementById('btn-real').classList.toggle('on', S.notes === 'real');
+  setPressed('btn-ref',  S.notes === 'ref');
+  setPressed('btn-real', S.notes === 'real');
   const forkBtn = document.getElementById('btn-mode');
   forkBtn.classList.toggle('on', simple);
   forkBtn.setAttribute('aria-pressed', String(simple));
