@@ -63,7 +63,31 @@ h1 {
   border-color: var(--acc);
   color: var(--acc);
 }
-/* モード切替：囲みなし・右寄せ */
+/* シンプルA は入口を目立たせる：音量のすぐ上、全幅 */
+.mode-a-row {
+  width: 100%;
+  margin-bottom: 14px;
+}
+.mode-a-btn {
+  width: 100%;
+  padding: 12px 0;
+  border-radius: 999px;
+  border: 1.5px solid var(--bdr);
+  background: var(--card);
+  color: var(--dim);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.mode-a-btn.on {
+  border-color: var(--acc);
+  color: var(--acc);
+}
+
+/* 残りのモード切替：囲みなし・右寄せ */
 .mode-row {
   display: flex;
   justify-content: flex-end;
@@ -93,7 +117,7 @@ h1 {
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  margin-bottom: 56px;
+  margin-bottom: 36px;
 }
 .fork-stage.show { display: flex; }
 .fork-btn {
@@ -172,7 +196,7 @@ h1 {
   flex-wrap: nowrap;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 64px;
+  margin-bottom: 40px;
 }
 .sitem {
   display: flex;
@@ -309,6 +333,11 @@ input[type=range]::-moz-range-thumb {
 <!-- 弦ボタン -->
 <div class="sg" id="sg"></div>
 
+<!-- シンプルA への入口 -->
+<div class="mode-a-row">
+  <button class="mode-a-btn" id="btn-a" onclick="setMode('a')">A</button>
+</div>
+
 <!-- 音量・A4 -->
 <div class="ctrl">
   <span class="cl">音量</span>
@@ -325,7 +354,6 @@ input[type=range]::-moz-range-thumb {
   <span class="cv" id="a4v">440 Hz</span>
 </div>
 <div class="mode-row">
-  <button class="mode-btn" id="btn-a"    onclick="setMode('a')">A</button>
   <button class="mode-btn" id="btn-fork" onclick="setMode('fork')">音叉</button>
   <button class="mode-btn" id="btn-open" onclick="setMode('open')">実音</button>
 </div>
