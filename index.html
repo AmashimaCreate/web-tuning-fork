@@ -87,14 +87,27 @@ h1 {
   color: var(--acc);
 }
 
-/* 残りのモード切替：囲みなし・右寄せ */
+/* 最下段：左にチューナーへの導線、右に残りのモード切替 */
 .mode-row {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
   gap: 4px;
   width: 100%;
   margin-top: 4px;
 }
+.app-link {
+  padding: 4px 6px;
+  color: var(--dim);
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.app-link:hover,
+.app-link:focus-visible { color: var(--acc); }
+.mode-group { display: flex; gap: 4px; }
 .mode-btn {
   padding: 4px 10px;
   border-radius: 999px;
@@ -354,8 +367,12 @@ input[type=range]::-moz-range-thumb {
   <span class="cv" id="a4v">440 Hz</span>
 </div>
 <div class="mode-row">
-  <button class="mode-btn" id="btn-fork" onclick="setMode('fork')">音叉</button>
-  <button class="mode-btn" id="btn-open" onclick="setMode('open')">実音</button>
+  <a class="app-link" href="https://amashimacreate.github.io/tuner/"
+     target="_blank" rel="noopener noreferrer">チューナー ↗</a>
+  <div class="mode-group">
+    <button class="mode-btn" id="btn-fork" onclick="setMode('fork')">音叉</button>
+    <button class="mode-btn" id="btn-open" onclick="setMode('open')">実音</button>
+  </div>
 </div>
 
 <script>
