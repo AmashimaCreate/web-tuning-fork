@@ -5,7 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#131518">
 <meta name="description" content="ギター/ベースの調弦用Web音叉。音叉のA、各弦の実音・基準音を再生。A4は432〜446Hzで調整できます。音はブラウザ内で生成されます。">
-<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🎵</text></svg>'>
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Web音叉 – ギター/ベース">
+<meta property="og:description" content="ギター/ベースの調弦用Web音叉。音叉のA、各弦の実音・基準音を再生。A4は432〜446Hzで調整できます。">
+<meta property="og:url" content="https://amashimacreate.github.io/web-tuning-fork/">
+<meta property="og:image" content="https://amashimacreate.github.io/web-tuning-fork/icons/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <title>Web音叉 – ギター/ベース</title>
 <style>
 :root {
@@ -672,6 +680,14 @@ function load() {
 // ── 起動 ──
 load();
 draw();
+
+// インストール可能なオフラインコピー。network-first（sw.js 参照）なので、
+// オンライン時の挙動（デプロイの取り込みを含む）は変わらない。
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
