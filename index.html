@@ -22,18 +22,19 @@
   --bdr:    #2b2f36;
   --acc:    #c8a84b;
   --txt:    #dde0e4;
-  --dim:    #727880;
+  --dim:    #8f969f;
   --on-bg:  #1e2b14;
   --on-bdr: #6ab030;
   --on-txt: #96d44a;
+  --error:  #ffb4b4;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   background: var(--bg);
   color: var(--txt);
   font-family: -apple-system, 'Helvetica Neue', sans-serif;
-  font-size: 15px;
-  max-width: 420px;
+  font-size: 16px;
+  max-width: 440px;
   margin: 0 auto;
   padding: 32px 14px 48px;
   display: flex;
@@ -44,7 +45,7 @@ body {
 }
 
 h1 {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--dim);
   letter-spacing: .08em;
@@ -85,12 +86,13 @@ h1 {
 }
 .notes-row { display: flex; gap: 4px; }
 .mode-btn {
-  padding: 4px 10px;
+  min-height: 44px;
+  padding: 8px 12px;
   border-radius: 999px;
   border: none;
   background: transparent;
   color: var(--dim);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   transition: color .15s;
@@ -98,33 +100,19 @@ h1 {
 }
 .mode-btn.on { color: var(--txt); }
 .app-link {
-  padding: 4px 6px;
+  min-height: 44px;
+  padding: 8px 6px;
   color: var(--dim);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   text-decoration: none;
   transition: color .15s;
   -webkit-tap-highlight-color: transparent;
+  display: inline-flex;
+  align-items: center;
 }
 .app-link:hover,
 .app-link:focus-visible { color: var(--acc); }
-.mode-group { display: flex; gap: 4px; }
-.mode-btn {
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: none;
-  background: transparent;
-  color: var(--dim);
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: color .15s;
-  -webkit-tap-highlight-color: transparent;
-}
-.mode-btn.on {
-  color: var(--txt);
-}
-
 /* シンプルA：音叉そのもの */
 .fork-stage {
   display: none;
@@ -195,7 +183,22 @@ h1 {
 .fork-note { font-size: 30px; font-weight: 800; letter-spacing: -.02em; color: var(--dim); }
 .fork-hz   { font-size: 13px; font-weight: 700; color: var(--dim); }
 .fork-stage.on .fork-note, .fork-stage.on .fork-hz { color: var(--on-txt); }
-.fork-hint { font-size: 11px; color: var(--dim); }
+.fork-hint { font-size: 13px; color: var(--dim); }
+
+.audio-error {
+  width: 100%;
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--error) 55%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--error) 9%, transparent);
+  color: var(--error);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.5;
+  text-align: center;
+}
+.audio-error[hidden] { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .fork-btn.on .fork-tine-l,
@@ -243,7 +246,7 @@ h1 {
   background: var(--on-bg);
   box-shadow: 0 0 12px rgba(106,176,48,.25);
 }
-.sn  { font-size: 9px;  color: var(--dim); line-height: 1; }
+.sn  { font-size: 11px; color: var(--dim); line-height: 1; }
 .sk  { font-size: 16px; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
 .sbtn.on .sn { color: var(--on-txt); opacity: .8; }
 .sbtn.on .sk { color: var(--on-txt); }
@@ -262,9 +265,9 @@ h1 {
   margin-bottom: 8px;
   width: 100%;
 }
-.cl { font-size: 11px; color: var(--dim); min-width: 28px; }
+.cl { font-size: 13px; color: var(--dim); min-width: 34px; }
 .cv {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--acc);
   font-variant-numeric: tabular-nums;
@@ -272,7 +275,7 @@ h1 {
   text-align: right;
 }
 .sb {
-  width: 30px; height: 30px;
+  width: 44px; height: 44px;
   border-radius: 50%;
   border: 1px solid var(--bdr);
   background: var(--bg);
@@ -310,12 +313,48 @@ input[type=range]:focus-visible {
 }
 input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 22px; height: 22px; border-radius: 50%;
+  width: 24px; height: 24px; border-radius: 50%;
   background: var(--acc); border: 2px solid var(--bg);
 }
 input[type=range]::-moz-range-thumb {
-  width: 22px; height: 22px; border-radius: 50%;
+  width: 24px; height: 24px; border-radius: 50%;
   background: var(--acc); border: 2px solid var(--bg);
+}
+
+@media (max-width: 340px) {
+  body { padding-inline: 8px; }
+  .sg { gap: 3px; }
+  .sbtn { width: 44px; height: 44px; }
+  .sk { font-size: 15px; }
+  .ctrl { gap: 6px; padding-inline: 10px; }
+  .cv { min-width: 48px; }
+}
+
+@media (min-width: 768px) {
+  body { max-width: 520px; }
+  h1 { font-size: 15px; }
+  .fork-svg { width: 160px; }
+  .fork-note { font-size: 34px; }
+  .fork-hz { font-size: 14px; }
+  .pill-btn { min-height: 48px; padding-inline: 26px; font-size: 16px; }
+  .sg { gap: 10px; }
+  .sbtn { width: 64px; height: 64px; }
+  .sk { font-size: 18px; }
+  .sf { font-size: 13px; }
+  .ctrl { padding: 10px 16px; }
+}
+
+@media (max-height: 650px) {
+  body { padding-block: 12px 16px; }
+  h1 { margin-bottom: 8px; }
+  .fork-stage { gap: 6px; margin-bottom: 12px; }
+  .fork-svg { width: 82px; }
+  .fork-note { font-size: 26px; }
+  .fork-hz { font-size: 12px; }
+  .fork-hint { font-size: 12px; }
+  .inst-row { margin-bottom: 12px; }
+  .sg { margin-bottom: 16px; }
+  .ctrl { margin-bottom: 6px; padding-block: 5px; }
 }
 </style>
 </head>
@@ -323,6 +362,8 @@ input[type=range]::-moz-range-thumb {
 <noscript>この音叉の動作には JavaScript が必要です。</noscript>
 
 <h1>🎸 WEB音叉</h1>
+
+<p class="audio-error" id="audioError" role="alert" aria-live="assertive" hidden></p>
 
 <!-- シンプルA：音叉を叩いて鳴らす -->
 <div class="fork-stage" id="forkStage">
@@ -360,8 +401,8 @@ input[type=range]::-moz-range-thumb {
 </div>
 
 <!-- 楽器切替 -->
-<div class="inst-row" id="inst-row">
-  <button class="pill-btn" id="btn-mode" type="button" onclick="toggleFork()"
+<div class="inst-row" id="inst-row" role="group" aria-label="再生する音を選択">
+  <button class="pill-btn" id="btn-mode" type="button" onclick="setMode('fork')"
           aria-pressed="true">音叉</button>
   <button class="pill-btn" id="btn-guitar" type="button" onclick="setInst('guitar')"
           aria-pressed="false">Guitar</button>
@@ -392,7 +433,7 @@ input[type=range]::-moz-range-thumb {
 <div class="mode-row">
   <a class="app-link" href="https://amashimacreate.github.io/tuner/"
      target="_blank" rel="noopener noreferrer">チューナー ↗</a>
-  <div class="notes-row" id="notes-row">
+  <div class="notes-row" id="notes-row" role="group" aria-label="弦の音域">
     <button class="mode-btn" id="btn-ref" type="button" onclick="setNotes('ref')"
             aria-pressed="false">基準音</button>
     <button class="mode-btn" id="btn-real" type="button" onclick="setNotes('real')"
@@ -444,10 +485,27 @@ function getTarget(str) {
 
 // ── Web Audio ──
 let ctx = null, osc = null, gain = null;
+let playbackRequest = 0;
+let pendingPlayingId = null;
+
+function showAudioError(message) {
+  const error = document.getElementById('audioError');
+  error.textContent = message;
+  error.hidden = false;
+}
+
+function clearAudioError() {
+  const error = document.getElementById('audioError');
+  error.textContent = '';
+  error.hidden = true;
+}
 
 async function ensureCtx() {
-  if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) throw new Error('Web Audio API is unavailable');
+  if (!ctx || ctx.state === 'closed') ctx = new AudioContextClass();
   if (ctx.state === 'suspended') await ctx.resume();
+  if (ctx.state !== 'running') throw new Error('AudioContext did not start');
 }
 
 function _stop() {
@@ -464,24 +522,51 @@ function _stop() {
   } catch(e) {}
 }
 
-async function play(hz) {
-  await ensureCtx();
-  _stop();
-  const _osc  = ctx.createOscillator();
-  const _gain = ctx.createGain();
-  _osc.type = 'sine';
-  _osc.frequency.value = hz;
-  _gain.gain.setValueAtTime(0, ctx.currentTime);
-  _gain.gain.linearRampToValueAtTime(S.vol, ctx.currentTime + 0.02);
-  _osc.connect(_gain);
-  _gain.connect(ctx.destination);
-  _osc.start();
-  osc = _osc; gain = _gain;
+async function startPlaying(nextPlaying, hz) {
+  const request = ++playbackRequest;
+  let nextOsc = null;
+  let nextGain = null;
+  pendingPlayingId = nextPlaying.id;
+  clearAudioError();
+
+  try {
+    await ensureCtx();
+    if (request !== playbackRequest) return false;
+
+    _stop();
+    nextOsc = ctx.createOscillator();
+    nextGain = ctx.createGain();
+    nextOsc.type = 'sine';
+    nextOsc.frequency.value = hz;
+    nextGain.gain.setValueAtTime(0, ctx.currentTime);
+    nextGain.gain.linearRampToValueAtTime(S.vol, ctx.currentTime + 0.02);
+    nextOsc.connect(nextGain);
+    nextGain.connect(ctx.destination);
+    nextOsc.start();
+    osc = nextOsc;
+    gain = nextGain;
+    S.playing = nextPlaying;
+    pendingPlayingId = null;
+    drawSounding();
+    return true;
+  } catch (error) {
+    try { nextOsc?.disconnect(); nextGain?.disconnect(); } catch {}
+    if (request !== playbackRequest) return false;
+    _stop();
+    S.playing = null;
+    pendingPlayingId = null;
+    drawSounding();
+    showAudioError('音を再生できませんでした。端末の音量とブラウザの音声設定を確認して、もう一度タップしてください。');
+    return false;
+  }
 }
 
 function stopAll() {
+  playbackRequest++;
+  pendingPlayingId = null;
   _stop();
   S.playing = null;
+  clearAudioError();
   drawSounding();
 }
 
@@ -489,35 +574,35 @@ function stopAll() {
 // 弦を選ばず A だけを鳴らす。A4 スライダーがそのまま基準になる。
 const FORK_A = { note:'A', oct:4, id:'A4_fork' };
 
-function clickFork() {
-  if (S.playing && S.playing.id === FORK_A.id) { stopAll(); return; }
-  S.playing = { id: FORK_A.id, note: FORK_A.note, oct: FORK_A.oct };
-  play(calcFreq(FORK_A.note, FORK_A.oct, S.a4));
-  drawSounding();
+async function clickFork() {
+  if (S.playing?.id === FORK_A.id || pendingPlayingId === FORK_A.id) {
+    stopAll();
+    return;
+  }
+  const nextPlaying = { id: FORK_A.id, note: FORK_A.note, oct: FORK_A.oct };
+  await startPlaying(nextPlaying, calcFreq(FORK_A.note, FORK_A.oct, S.a4));
 }
 
 // ── 弦タップ ──
-function clickStr(stringNo) {
+async function clickStr(stringNo) {
   const str = PRESETS[S.inst].find(s => s.n === stringNo);
   if (!str) return;
   const tgt = getTarget(str);
   const id  = tgt.note + tgt.oct + '_' + str.n; // 同音名でも弦を区別
-  if (S.playing && S.playing.id === id) { stopAll(); return; }
-  S.playing = { id, note: tgt.note, oct: tgt.oct };
-  play(calcFreq(tgt.note, tgt.oct, S.a4));
-  drawSounding();
+  if (S.playing?.id === id || pendingPlayingId === id) {
+    stopAll();
+    return;
+  }
+  const nextPlaying = { id, note: tgt.note, oct: tgt.oct };
+  await startPlaying(nextPlaying, calcFreq(tgt.note, tgt.oct, S.a4));
 }
 
-// ── 音叉 / 6音 の切替（ボタンひとつ） ──
+// ── 基準音 / 実音の切替 ──
 function setNotes(v) {
   if (S.notes === v) return;
   stopAll();
   S.notes = v;
   save(); draw();
-}
-
-function toggleFork() {
-  setMode(S.mode === 'fork' ? 'open' : 'fork');
 }
 
 // ── 楽器・モード切替 ──
@@ -590,8 +675,10 @@ function drawSounding() {
 
 function drawFork() {
   const on = Boolean(S.playing && S.playing.id === FORK_A.id);
-  document.getElementById('forkBtn').classList.toggle('on', on);
-  document.getElementById('forkBtn').setAttribute('aria-pressed', String(on));
+  const button = document.getElementById('forkBtn');
+  button.classList.toggle('on', on);
+  button.setAttribute('aria-pressed', String(on));
+  button.setAttribute('aria-label', on ? '音叉を止める' : '音叉を鳴らす');
   document.getElementById('forkStage').classList.toggle('on', on);
   document.getElementById('forkNote').textContent = FORK_A.note + FORK_A.oct;
   document.getElementById('forkHz').textContent =
@@ -630,6 +717,10 @@ function drawStrings() {
     const button = item.querySelector('.sbtn');
     button.classList.toggle('on', on);
     button.setAttribute('aria-pressed', String(on));
+    button.setAttribute(
+      'aria-label',
+      `${str.n}弦 ${tgt.note}${tgt.oct}を${on ? '止める' : '鳴らす'}`
+    );
   }
 }
 
@@ -680,6 +771,8 @@ function load() {
 // ── 起動 ──
 load();
 draw();
+
+window.addEventListener('pagehide', () => stopAll());
 
 // インストール可能なオフラインコピー。network-first（sw.js 参照）なので、
 // オンライン時の挙動（デプロイの取り込みを含む）は変わらない。
